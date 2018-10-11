@@ -6189,6 +6189,38 @@ namespace Microsoft.EntityFrameworkCore
         }
 
         [ConditionalFact]
+        public virtual void Re_childing_parent_to_new_child_with_delete()
+        {
+            ExecuteWithStrategyInTransaction(
+                context =>
+                {
+                    var parent = context.Set<ParentAsAChild>().Include(p => p.ChildAsAParent).Single(p => p.Id == 1);
+
+                    var oldChild = parent.ChildAsAParent;
+                    context.Remove(oldChild);
+
+                    var newChild = new ChildAsAParent { Id = 3 };
+                    parent.ChildAsAParent = newChild;
+
+                    context.SaveChanges();
+
+                    Assert.Equal(3, parent.ChildAsAParentId);
+                    Assert.Same(newChild, parent.ChildAsAParent);
+
+                    Assert.Equal(EntityState.Detached, context.Entry(oldChild).State);
+                    Assert.Equal(EntityState.Unchanged, context.Entry(newChild).State);
+                    Assert.Equal(EntityState.Unchanged, context.Entry(parent).State);
+                },
+                context =>
+                {
+                    var parent = context.Set<ParentAsAChild>().Include(p => p.ChildAsAParent).Single(p => p.Id == 1);
+                    Assert.Equal(3, parent.ChildAsAParentId);
+                    Assert.Equal(3, parent.ChildAsAParent.Id);
+                    Assert.Null(context.Set<ChildAsAParent>().Find(1));
+                });
+        }
+
+        [ConditionalFact]
         public virtual void Sometimes_not_calling_DetectChanges_when_required_does_not_throw_for_null_ref()
         {
             ExecuteWithStrategyInTransaction(

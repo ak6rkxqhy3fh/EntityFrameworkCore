@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -405,6 +406,8 @@ namespace Microsoft.EntityFrameworkCore
                     .HasForeignKey(tc => tc.QuestTaskId);
 
                 modelBuilder.Entity<TaskChoice>();
+                modelBuilder.Entity<ParentAsAChild>();
+                modelBuilder.Entity<ChildAsAParent>();
             }
 
             protected virtual object CreateFullGraph()
@@ -674,6 +677,16 @@ namespace Microsoft.EntityFrameworkCore
                     new BadOrder
                     {
                         BadCustomer = new BadCustomer()
+                    });
+
+                context.Add(
+                    new ParentAsAChild
+                    {
+                        Id = 1,
+                        ChildAsAParent = new ChildAsAParent
+                        {
+                            Id = 2
+                        }
                     });
 
                 context.SaveChanges();
@@ -2741,6 +2754,22 @@ namespace Microsoft.EntityFrameworkCore
                 get => _questTaskId;
                 set => SetWithNotify(value, ref _questTaskId);
             }
+        }
+
+        protected class ParentAsAChild
+        {
+            [DatabaseGenerated(DatabaseGeneratedOption.None)]
+            public int Id { get; set; }
+
+            public int? ChildAsAParentId { get; set; }
+            public ChildAsAParent ChildAsAParent { get; set; }
+        }
+
+        protected class ChildAsAParent
+        {
+            public int Id { get; set; }
+
+            public ParentAsAChild ParentAsAChild { get; set; }
         }
 
         protected abstract class TaskWithChoices : QuestTask
