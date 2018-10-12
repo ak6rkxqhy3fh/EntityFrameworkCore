@@ -60,19 +60,6 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
         public class GenericNonRelationship : NonRelationshipTestBase
         {
-            [Fact]
-            public virtual void Can_add_ignore_explicit_interface_implementation_property()
-            {
-                var modelBuilder = CreateModelBuilder();
-                modelBuilder.Entity<EntityBase>().Ignore(e => ((IEntityBase)e).Target);
-
-                Assert.Empty(modelBuilder.Model.FindEntityType(typeof(EntityBase)).GetProperties());
-
-                modelBuilder.Entity<EntityBase>().Property(e => ((IEntityBase)e).Target);
-
-                Assert.Equal(1, modelBuilder.Model.FindEntityType(typeof(EntityBase)).GetProperties().Count());
-            }
-
             protected override TestModelBuilder CreateTestModelBuilder(TestHelpers testHelpers)
                 => new GenericTestModelBuilder(testHelpers);
         }

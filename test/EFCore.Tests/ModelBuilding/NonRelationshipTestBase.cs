@@ -1300,6 +1300,32 @@ namespace Microsoft.EntityFrameworkCore.ModelBuilding
 
                 Assert.Single(modelBuilder.Model.FindEntityType(typeof(Gamma)).GetProperties());
             }
+
+            //[Fact]
+            public virtual void Changing_propertyInfo_updates_Property()
+            {
+                var modelBuilder = CreateModelBuilder();
+
+                modelBuilder.Entity<DoubleProperty>().Property(e => ((IReplacable)e).Property);
+
+                modelBuilder.Validate();
+
+                var property = modelBuilder.Model.FindEntityType(typeof(DoubleProperty)).GetProperty("Property");
+                Assert.Equal(typeof(IReplacable), property.GetIdentifyingMemberInfo().DeclaringType);
+            }
+
+            [Fact]
+            public virtual void Can_add_ignore_explicit_interface_implementation_property()
+            {
+                var modelBuilder = CreateModelBuilder();
+                modelBuilder.Entity<EntityBase>().Ignore(e => ((IEntityBase)e).Target);
+
+                Assert.Empty(modelBuilder.Model.FindEntityType(typeof(EntityBase)).GetProperties());
+
+                modelBuilder.Entity<EntityBase>().Property(e => ((IEntityBase)e).Target);
+
+                Assert.Equal(1, modelBuilder.Model.FindEntityType(typeof(EntityBase)).GetProperties().Count());
+            }
         }
     }
 }
